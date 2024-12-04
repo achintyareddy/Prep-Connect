@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extracurricular Explorer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Extracurricular Explorer</h1>
+      <p>Find activities and programs to boost your college application based on your interests.</p>
+    </header>
+    <nav>
+      <ul>
+        <li><a href="#profile" onclick="showSection('profile')">Profile</a></li>
+        <li><a href="#search" onclick="showSection('search')">Search</a></li>
+        <li><a href="#saved" onclick="showSection('saved')">Saved Activities</a></li>
+      </ul>
+    </nav>
+    <section id="profile" class="section hidden">
+      <h2>User Profile</h2>
+      <form id="profile-form">
+        <label for="username">Username:</label>
+        <input type="text" id="username" required>
+        <button type="submit">Save Profile</button>
+      </form>
+      <div id="user-info"></div>
+    </section>
+    <section id="search" class="section hidden">
+      <div class="search-box">
+        <label for="interests">Enter your interests:</label>
+        <input type="text" id="interests" placeholder="e.g., coding, sports, music">
+        <button onclick="searchPrograms()">Search</button>
+      </div>
+      <div id="results" class="hidden">
+        <h2>Programs Based on Your Interests</h2>
+        <div id="program-list"></div>
+      </div>
+    </section>
+    <section id="saved" class="section hidden">
+      <h2>Saved Activities</h2>
+      <div id="saved-list"></div>
+    </section>
+    <div id="notifications" class="hidden">
+      <p>Notification: <span id="notification-text"></span></p>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 80%;
+    max-width: 800px;
+    animation: fadeIn 1s ease-in-out;
+  }
+  
+  header {
+    margin-bottom: 20px;
+  }
+  
+  nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  nav ul li {
+    margin: 0 15px;
+  }
+  
+  nav ul li a {
+    text-decoration: none;
+    color: #3498db;
+    font-weight: bold;
+  }
+  
+  .section {
+    display: none;
+    margin-top: 20px;
+  }
+  
+  .section.active {
+    display: block;
+  }
+  
+  .search {
+    margin-bottom: 20px;
+  }
+  
+  #results {
+    margin-top: 20px;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  #notifications {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #3498db;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    animation: slideIn 0.5s forwards;
+  }
+  
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  document.addEventListener('DOMContentLoaded', () => {
+    showSection('profile');
+  
+    document.querySelectorAll('nav ul li a').forEach(link => {
+      link.addEventListener('click', event => {
+        event.preventDefault();
+        const target = link.getAttribute('href').substring(1);
+        showSection(target);
+      });
+    });
+  
+    document.getElementById('profile-form').addEventListener('submit', event => {
+      event.preventDefault();
+      const username = document.getElementById('username').value;
+      if (username) {
+        localStorage.setItem('username', username);
+        document.getElementById('user-info').innerText = `Welcome, ${username}!`;
+        showNotification('Profile saved!');
+        showSection('search');
+      } else {
+        showNotification('Please enter a valid username.');
+      }
+    });
+  
+    const savedUsername = localStorage.getItem('username');
+    if (savedUsername) {
+      document.getElementById('user-info').innerText = `Welcome back, ${savedUsername}!`;
+      showSection('search');
+    }
+  });
+  
+  function showSection(section) {
+    document.querySelectorAll('.section').forEach(sec => {
+      sec.classList.remove('active');
+    });
+    document.getElementById(section).classList.add('active');
+  }
+  
+  function searchPrograms() {
+    const interests = document.getElementById('interests').value.toLowerCase().split(',').map(interest => interest.trim());
+    const results = document.getElementById('results');
+    const programList = document.getElementById('program-list');
+    programList.innerHTML = '';
+  
+    const programs = [
+      { name: 'Coding Bootcamp', category: 'coding' },
+      { name: 'Basketball Team', category: 'sports' },
+      { name: 'Music Club', category: 'music' },
+      { name: 'Robotics Workshop', category: 'coding' },
+      { name: 'Soccer Team', category: 'sports' },
+      { name: 'Drama Club', category: 'drama' },
+      { name: 'Science Fair', category: 'science' }
+    ];
+  
+    const filteredPrograms = programs.filter(program => interests.includes(program.category));
+  
+    if (filteredPrograms.length > 0) {
+      filteredPrograms.forEach(program => {
+        const div = document.createElement('div');
+        div.innerHTML = `<h3>${program.name}</h3>
+                         <p>Category: ${program.category}</p>
+                         <button onclick="saveActivity('${program.name}', '${program.category}')">Save Activity</button>`;
+        programList.appendChild(div);
+      });
+      results.classList.remove('hidden');
+    } else {
+      programList.innerHTML = '<p>No programs found for your interests.</p>';
+      results.classList.remove('hidden');
+    }
+  }
+  
+  function saveActivity(name, category) {
+    let savedActivities = JSON.parse(localStorage.getItem('savedActivities')) || [];
+    savedActivities.push({ name, category });
+    localStorage.setItem('savedActivities', JSON.stringify(savedActivities));
+    showNotification('Activity saved!');
+    displaySavedActivities();
+  }
+  
+  function displaySavedActivities() {
+    const savedList = document.getElementById('saved-list');
+    savedList.innerHTML = '';
+    const savedActivities = JSON.parse(localStorage.getItem('savedActivities')) || [];
+    if (savedActivities.length > 0) {
+      savedActivities.forEach(activity => {
+        const div = document.createElement('div');
+        div.innerHTML = `<h3>${activity.name}</h3><p>Category: ${activity.category}</p>`;
+        savedList.appendChild(div);
+      });
+    } else {
+      savedList.innerHTML = '<p>No saved activities.</p>';
+    }
+  }
+  
+  function showNotification(message) {
+    const notification = document.getElementById('notifications');
+    document.getElementById('notification-text').innerText = message;
+    notification.classList.remove('hidden');
+    setTimeout(() => {
+      notification.classList.add('hidden');
+    }, 3000);
+  }
+    
